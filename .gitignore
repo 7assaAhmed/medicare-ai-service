@@ -1,0 +1,17 @@
+# Never commit real secrets
+.env
+.env.local
+.env.*.local
+
+# Python
+venv/
+__pycache__/
+*.pyc
+*.pyo
+*.egg-info/
+.pytest_cache/
+
+# OS/editor noise
+.DS_Store
+.vscode/
+*.swp

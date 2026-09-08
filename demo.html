@@ -1,0 +1,623 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MediCare — تجربة تحليل الروشتة</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap');
+
+  :root {
+    --teal: #0F766E;
+    --teal-dark: #0B5D57;
+    --teal-soft: #E6F4F2;
+    --navy: #1E3A5F;
+    --navy-soft: #5B7592;
+    --bg: #F4F7F8;
+    --card: #FFFFFF;
+    --border: #E3E9EA;
+    --danger: #DC4C4C;
+    --danger-soft: #FBEAEA;
+    --amber: #C77D1E;
+    --amber-soft: #FBF1E1;
+    --good: #0F766E;
+    --good-soft: #E6F4F2;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    font-family: 'Cairo', 'Segoe UI', Tahoma, sans-serif;
+    background: var(--bg);
+    color: var(--navy);
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    padding: 32px 16px 80px;
+  }
+
+  .phone {
+    width: 100%;
+    max-width: 420px;
+  }
+
+  .top {
+    text-align: center;
+    margin-bottom: 20px;
+  }
+
+  .top .badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--teal-soft);
+    color: var(--teal-dark);
+    padding: 6px 14px;
+    border-radius: 999px;
+    font-size: 13px;
+    font-weight: 600;
+    margin-bottom: 14px;
+  }
+
+  h1 {
+    font-size: 22px;
+    font-weight: 800;
+    margin: 0 0 6px;
+    color: var(--navy);
+  }
+
+  .top p {
+    color: var(--navy-soft);
+    font-size: 14px;
+    margin: 0;
+    line-height: 1.6;
+  }
+
+  .card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 22px;
+    margin-bottom: 16px;
+    box-shadow: 0 1px 3px rgba(30, 58, 95, 0.04);
+  }
+
+  .settings-toggle {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--navy-soft);
+    user-select: none;
+  }
+
+  .settings-toggle svg { transition: transform 0.2s; }
+  .settings-toggle.open svg { transform: rotate(180deg); }
+
+  .settings-body {
+    display: none;
+    margin-top: 16px;
+    padding-top: 16px;
+    border-top: 1px dashed var(--border);
+  }
+  .settings-body.open { display: block; }
+
+  .field { margin-bottom: 12px; }
+  .field:last-child { margin-bottom: 0; }
+
+  .field label {
+    display: block;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--navy-soft);
+    margin-bottom: 6px;
+  }
+
+  .field input, .field select {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    font-family: inherit;
+    font-size: 13px;
+    color: var(--navy);
+    background: #FBFCFC;
+  }
+  .field input:focus, .field select:focus {
+    outline: none;
+    border-color: var(--teal);
+  }
+
+  .dropzone {
+    border: 2px dashed var(--border);
+    border-radius: 18px;
+    padding: 36px 20px;
+    text-align: center;
+    cursor: pointer;
+    transition: border-color 0.15s, background 0.15s;
+  }
+  .dropzone:hover, .dropzone.drag {
+    border-color: var(--teal);
+    background: var(--teal-soft);
+  }
+  .dropzone svg { margin-bottom: 10px; }
+  .dropzone .main-text {
+    font-weight: 700;
+    font-size: 15px;
+    color: var(--navy);
+    margin-bottom: 4px;
+  }
+  .dropzone .sub-text {
+    font-size: 12px;
+    color: var(--navy-soft);
+  }
+
+  .preview-wrap {
+    display: none;
+  }
+  .preview-wrap.show { display: block; }
+  .preview-wrap img {
+    width: 100%;
+    border-radius: 14px;
+    display: block;
+    margin-bottom: 14px;
+    max-height: 220px;
+    object-fit: cover;
+  }
+
+  button.primary {
+    width: 100%;
+    background: var(--teal);
+    color: white;
+    border: none;
+    padding: 14px;
+    border-radius: 14px;
+    font-family: inherit;
+    font-size: 15px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: background 0.15s;
+  }
+  button.primary:hover { background: var(--teal-dark); }
+  button.primary:disabled { background: #B7C4C4; cursor: not-allowed; }
+
+  button.ghost {
+    width: 100%;
+    background: transparent;
+    color: var(--navy-soft);
+    border: 1px solid var(--border);
+    padding: 12px;
+    border-radius: 14px;
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    margin-top: 8px;
+  }
+
+  /* Loading state */
+  .loading { display: none; text-align: center; padding: 20px 10px; }
+  .loading.show { display: block; }
+  .spinner {
+    width: 52px; height: 52px;
+    margin: 0 auto 18px;
+    border-radius: 50%;
+    border: 4px solid var(--teal-soft);
+    border-top-color: var(--teal);
+    animation: spin 0.9s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .loading-text {
+    font-weight: 700;
+    color: var(--navy);
+    margin-bottom: 4px;
+  }
+  .loading-sub {
+    font-size: 12px;
+    color: var(--navy-soft);
+  }
+
+  /* Results */
+  .results { display: none; }
+  .results.show { display: block; }
+
+  .confidence-ring-wrap {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 4px;
+  }
+  .ring {
+    width: 64px; height: 64px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 800;
+    font-size: 15px;
+    flex-shrink: 0;
+  }
+  .ring-label { font-size: 13px; color: var(--navy-soft); line-height: 1.5; }
+  .ring-label b { color: var(--navy); display: block; font-size: 14px; }
+
+  .review-banner {
+    display: flex;
+    gap: 10px;
+    align-items: flex-start;
+    background: var(--amber-soft);
+    border: 1px solid #EED9B4;
+    color: #8A5A14;
+    padding: 12px 14px;
+    border-radius: 12px;
+    font-size: 12.5px;
+    line-height: 1.6;
+    margin-top: 14px;
+  }
+
+  .med-card {
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 16px;
+    margin-bottom: 12px;
+  }
+  .med-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 10px;
+    margin-bottom: 8px;
+  }
+  .med-name {
+    font-weight: 700;
+    font-size: 15px;
+    color: var(--navy);
+  }
+  .med-generic {
+    font-size: 12px;
+    color: var(--navy-soft);
+    margin-top: 2px;
+  }
+  .conf-badge {
+    font-size: 12px;
+    font-weight: 800;
+    padding: 4px 10px;
+    border-radius: 999px;
+    white-space: nowrap;
+  }
+  .conf-good { background: var(--good-soft); color: var(--good); }
+  .conf-mid { background: var(--amber-soft); color: var(--amber); }
+  .conf-low { background: var(--danger-soft); color: var(--danger); }
+
+  .med-dose {
+    font-size: 13px;
+    color: var(--navy);
+    background: #FAFBFB;
+    border-radius: 10px;
+    padding: 8px 12px;
+    margin-top: 8px;
+  }
+
+  .med-flags {
+    margin-top: 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+  .flag {
+    font-size: 11.5px;
+    color: #8A5A14;
+    background: var(--amber-soft);
+    border-radius: 8px;
+    padding: 6px 10px;
+    line-height: 1.5;
+  }
+  .flag.not-found { color: var(--danger); background: var(--danger-soft); }
+
+  .doctor-note {
+    background: var(--teal-soft);
+    color: var(--teal-dark);
+    border-radius: 12px;
+    padding: 12px 14px;
+    font-size: 13px;
+    line-height: 1.6;
+    margin-bottom: 14px;
+  }
+
+  .error-box {
+    display: none;
+    background: var(--danger-soft);
+    color: var(--danger);
+    border-radius: 14px;
+    padding: 14px 16px;
+    font-size: 13px;
+    line-height: 1.7;
+    font-weight: 600;
+  }
+  .error-box.show { display: block; }
+
+  .footer-note {
+    text-align: center;
+    font-size: 11.5px;
+    color: var(--navy-soft);
+    margin-top: 10px;
+    line-height: 1.6;
+  }
+
+  input[type="file"] { display: none; }
+</style>
+</head>
+<body>
+
+<div class="phone">
+  <div class="top">
+    <div class="badge">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M12 2L4 6v6c0 5.5 3.8 10.7 8 12 4.2-1.3 8-6.5 8-12V6l-8-4z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg>
+      صفحة اختبار داخلية — مش جزء من التطبيق
+    </div>
+    <h1>جرّب تحليل الروشتة فعليًا</h1>
+    <p>ارفع صورة روشتة حقيقية وشوف الذكاء الاصطناعي شغال، مباشرة على نفس الخدمة اللي هتوصل لفريق الباك اند</p>
+  </div>
+
+  <div class="card">
+    <div class="settings-toggle" id="settingsToggle">
+      <span>⚙️ إعدادات الاتصال (Base URL / المفتاح)</span>
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M6 9l6 6 6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </div>
+    <div class="settings-body" id="settingsBody">
+      <div class="field">
+        <label>Base URL بتاع الخدمة</label>
+        <input type="text" id="baseUrl" value="http://localhost:8001">
+      </div>
+      <div class="field">
+        <label>X-Service-Api-Key</label>
+        <input type="text" id="apiKey" value="change-me-to-a-long-random-string">
+      </div>
+      <div class="field">
+        <label>لغة التعليمات (language_hint)</label>
+        <select id="langHint">
+          <option value="ar" selected>عربي</option>
+          <option value="en">إنجليزي</option>
+        </select>
+      </div>
+    </div>
+  </div>
+
+  <div class="card" id="uploadCard">
+    <div class="dropzone" id="dropzone">
+      <svg width="40" height="40" viewBox="0 0 24 24" fill="none"><path d="M12 16V4m0 0L7 9m5-5l5 5" stroke="#0F766E" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2" stroke="#0F766E" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      <div class="main-text">اضغط لرفع صورة الروشتة</div>
+      <div class="sub-text">JPEG أو PNG — أقصى حجم 10 ميجا</div>
+    </div>
+    <input type="file" id="fileInput" accept="image/jpeg,image/png">
+
+    <div class="preview-wrap" id="previewWrap">
+      <img id="previewImg" alt="معاينة الروشتة">
+      <button class="primary" id="analyzeBtn">حلّل الروشتة دلوقتي</button>
+      <button class="ghost" id="changeImgBtn">اختر صورة تانية</button>
+    </div>
+  </div>
+
+  <div class="card loading" id="loadingCard">
+    <div class="spinner"></div>
+    <div class="loading-text" id="loadingText">جاري تحليل الروشتة بالذكاء الاصطناعي...</div>
+    <div class="loading-sub">بياخد عادة من 5 لـ 25 ثانية حسب زحمة الموديل</div>
+  </div>
+
+  <div class="card">
+    <div class="error-box" id="errorBox"></div>
+  </div>
+
+  <div id="resultsWrap" class="results">
+    <div class="card">
+      <div class="confidence-ring-wrap" id="confidenceRing"></div>
+      <div id="reviewBanner"></div>
+    </div>
+    <div id="doctorNoteWrap"></div>
+    <div id="medsWrap"></div>
+  </div>
+
+  <div class="footer-note">
+    الصورة بتترفع مباشرة من متصفحك لخدمة الذكاء الاصطناعي المحلية —<br>مفيش أي بيانات بتتخزن أو تتبعت لأي مكان تاني.
+  </div>
+</div>
+
+<script>
+const settingsToggle = document.getElementById('settingsToggle');
+const settingsBody = document.getElementById('settingsBody');
+settingsToggle.addEventListener('click', () => {
+  settingsToggle.classList.toggle('open');
+  settingsBody.classList.toggle('open');
+});
+
+const dropzone = document.getElementById('dropzone');
+const fileInput = document.getElementById('fileInput');
+const previewWrap = document.getElementById('previewWrap');
+const previewImg = document.getElementById('previewImg');
+const analyzeBtn = document.getElementById('analyzeBtn');
+const changeImgBtn = document.getElementById('changeImgBtn');
+const loadingCard = document.getElementById('loadingCard');
+const uploadCard = document.getElementById('uploadCard');
+const resultsWrap = document.getElementById('resultsWrap');
+const errorBox = document.getElementById('errorBox');
+const loadingText = document.getElementById('loadingText');
+
+let selectedFile = null;
+
+dropzone.addEventListener('click', () => fileInput.click());
+dropzone.addEventListener('dragover', (e) => { e.preventDefault(); dropzone.classList.add('drag'); });
+dropzone.addEventListener('dragleave', () => dropzone.classList.remove('drag'));
+dropzone.addEventListener('drop', (e) => {
+  e.preventDefault();
+  dropzone.classList.remove('drag');
+  if (e.dataTransfer.files.length) handleFile(e.dataTransfer.files[0]);
+});
+fileInput.addEventListener('change', (e) => {
+  if (e.target.files.length) handleFile(e.target.files[0]);
+});
+changeImgBtn.addEventListener('click', () => {
+  selectedFile = null;
+  previewWrap.classList.remove('show');
+  dropzone.style.display = 'block';
+  fileInput.value = '';
+});
+
+function handleFile(file) {
+  selectedFile = file;
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    previewImg.src = e.target.result;
+    previewWrap.classList.add('show');
+    dropzone.style.display = 'none';
+  };
+  reader.readAsDataURL(file);
+}
+
+const loadingMessages = [
+  'جاري تحسين جودة الصورة...',
+  'جاري قراءة أسماء الأدوية...',
+  'جاري تحديد الجرعات والتعليمات...',
+  'جاري المطابقة مع قاعدة بيانات الأدوية...',
+];
+let loadingInterval = null;
+
+function startLoadingAnimation() {
+  let i = 0;
+  loadingInterval = setInterval(() => {
+    loadingText.textContent = loadingMessages[i % loadingMessages.length];
+    i++;
+  }, 2200);
+}
+function stopLoadingAnimation() {
+  clearInterval(loadingInterval);
+}
+
+analyzeBtn.addEventListener('click', async () => {
+  if (!selectedFile) return;
+
+  errorBox.classList.remove('show');
+  resultsWrap.classList.remove('show');
+  uploadCard.style.display = 'none';
+  loadingCard.classList.add('show');
+  startLoadingAnimation();
+
+  const baseUrl = document.getElementById('baseUrl').value.replace(/\/$/, '');
+  const apiKey = document.getElementById('apiKey').value;
+  const langHint = document.getElementById('langHint').value;
+
+  const form = new FormData();
+  form.append('image', selectedFile);
+  form.append('patient_id', crypto.randomUUID ? crypto.randomUUID() : '3fa85f64-5717-4562-b3fc-2c963f66afa6');
+  form.append('language_hint', langHint);
+
+  try {
+    const res = await fetch(`${baseUrl}/api/v1/prescriptions/analyze`, {
+      method: 'POST',
+      headers: { 'X-Service-Api-Key': apiKey },
+      body: form,
+    });
+    const data = await res.json();
+
+    stopLoadingAnimation();
+    loadingCard.classList.remove('show');
+    uploadCard.style.display = 'block';
+
+    if (!res.ok || data.success === false) {
+      const msg = (data.error && data.error.message) || 'حصل خطأ غير متوقع، حاول تاني.';
+      showError(msg);
+      return;
+    }
+
+    renderResults(data);
+  } catch (err) {
+    stopLoadingAnimation();
+    loadingCard.classList.remove('show');
+    uploadCard.style.display = 'block';
+    showError('تعذر الاتصال بالخدمة. تأكد إن الـ Base URL صح والسيرفر شغال، وإن CORS مفعّل.');
+  }
+});
+
+function showError(msg) {
+  errorBox.textContent = msg;
+  errorBox.classList.add('show');
+}
+
+function confidenceClass(score) {
+  if (score >= 0.85) return 'conf-good';
+  if (score >= 0.65) return 'conf-mid';
+  return 'conf-low';
+}
+function ringColor(score) {
+  if (score >= 0.85) return { bg: '#E6F4F2', fg: '#0F766E' };
+  if (score >= 0.65) return { bg: '#FBF1E1', fg: '#C77D1E' };
+  return { bg: '#FBEAEA', fg: '#DC4C4C' };
+}
+
+function renderResults(data) {
+  const pct = Math.round((data.overall_confidence || 0) * 100);
+  const colors = ringColor(data.overall_confidence || 0);
+
+  document.getElementById('confidenceRing').innerHTML = `
+    <div class="ring" style="background:${colors.bg}; color:${colors.fg};">${pct}%</div>
+    <div class="ring-label">
+      <b>نسبة الثقة الإجمالية</b>
+      ${data.medications.length} دواء تم استخراجه من الصورة
+    </div>
+  `;
+
+  const reviewBanner = document.getElementById('reviewBanner');
+  reviewBanner.innerHTML = data.requires_review
+    ? `<div class="review-banner">⚠️ فيه أدوية محتاجة مراجعة يدوية قبل الاعتماد — دي أمانة، مش عيب في الخدمة.</div>`
+    : '';
+
+  const doctorWrap = document.getElementById('doctorNoteWrap');
+  doctorWrap.innerHTML = data.doctor_instructions_ar
+    ? `<div class="card"><div class="doctor-note">📋 ملاحظات الطبيب: ${escapeHtml(data.doctor_instructions_ar)}</div></div>`
+    : '';
+
+  const medsWrap = document.getElementById('medsWrap');
+  medsWrap.innerHTML = data.medications.map((med, idx) => {
+    const conf = Math.round(med.confidence.combined_confidence * 100);
+    const confCls = confidenceClass(med.confidence.combined_confidence);
+    const drug = med.matched_drug;
+    const displayName = drug.brand_name_ar || med.raw_text_match;
+
+    const doseParts = [];
+    if (med.dosage.amount != null) doseParts.push(`${med.dosage.amount} ${med.dosage.unit || ''}`);
+    if (med.dosage.frequency_per_day) doseParts.push(`${med.dosage.frequency_per_day} مرات يوميًا`);
+    if (med.dosage.duration_days) doseParts.push(`لمدة ${med.dosage.duration_days} يوم`);
+    if (med.dosage.as_needed) doseParts.push('عند اللزوم');
+    const doseLine = med.dosage.instructions_ar || doseParts.join(' — ') || 'التعليمات غير واضحة';
+
+    const flags = (data.flagged_for_manual_review || []).filter(f => f.medication_index === idx);
+    const flagsHtml = flags.map(f => `<div class="flag ${f.reason === 'DRUG_NOT_IN_DATABASE' ? 'not-found' : ''}">${escapeHtml(f.message)}</div>`).join('');
+
+    return `
+      <div class="med-card">
+        <div class="med-head">
+          <div>
+            <div class="med-name">${escapeHtml(displayName)}</div>
+            ${drug.generic_name ? `<div class="med-generic">${escapeHtml(drug.generic_name)}${drug.strength ? ' — ' + escapeHtml(drug.strength) : ''}</div>` : `<div class="med-generic">${escapeHtml(med.raw_text_match)}</div>`}
+          </div>
+          <div class="conf-badge ${confCls}">${conf}%</div>
+        </div>
+        <div class="med-dose">${escapeHtml(doseLine)}</div>
+        ${flagsHtml ? `<div class="med-flags">${flagsHtml}</div>` : ''}
+      </div>
+    `;
+  }).join('');
+
+  resultsWrap.classList.add('show');
+}
+
+function escapeHtml(str) {
+  const div = document.createElement('div');
+  div.textContent = str;
+  return div.innerHTML;
+}
+</script>
+
+</body>
+</html>

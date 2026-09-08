@@ -67,7 +67,7 @@ Simple liveness/readiness check for load balancers and monitoring.
 {
   "status": "healthy",
   "version": "1.0.0",
-  "model_provider": "openrouter:anthropic/claude-sonnet-4.5",
+  "model_provider": "openrouter:gemini-3.6-flash",
   "timestamp": "2026-09-03T10:15:00Z"
 }
 ```
@@ -315,11 +315,13 @@ Not part of the AI service's contract, but so both teams agree on what gets stor
 
 ---
 
-## 8. Locked model decision
+## 8. Locked model decision (revised)
 
-The AI service is configured to use **`anthropic/claude-sonnet-4.5`** (via OpenRouter) in production. This was a deliberate decision after comparing it against cheaper/free alternatives (including a free-tier Gemini model and DeepSeek's vision model) — Claude was measurably more reliable at reading handwritten prescriptions and did not require the safety-threshold workarounds the alternatives needed. Do not change the configured model without re-running that comparison; a cheaper model that reads a dose wrong is not actually cheaper.
+The AI service is configured to use **`gemini-3.6-flash`** in production, called directly against Google's Gemini OpenAI-compatibility endpoint (`OPENROUTER_BASE_URL` points there despite the variable's name — kept generic so this client works with any OpenAI-compatible provider).
 
-This is transparent to ASP.NET Core: the contract (request/response shape, field names, error codes) does not change based on which underlying model is configured. Only `health`'s `model_provider` field reflects it.
+**History, for transparency:** the original decision (documented in an earlier version of this contract) was `anthropic/claude-sonnet-4.5`, chosen after real-image testing showed it read handwritten prescriptions more reliably than free/cheaper alternatives. The team later switched to Gemini for cost reasons during development. **This is a conscious accuracy-for-cost tradeoff, not an accuracy improvement** — side-by-side testing on the same prescriptions showed Gemini's `ocr_confidence` running noticeably lower than Claude's on the same handwriting. `requires_review` will trigger more often as a direct consequence; this is expected behavior, not a regression to debug.
+
+Do not change the configured model again without re-running that same real-image comparison. The contract shape (request/response fields, error codes) does not change based on which model is configured — only `health`'s `model_provider` field reflects it.
 
 ---
 

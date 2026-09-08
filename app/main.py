@@ -1,6 +1,7 @@
 import logging
 
 from fastapi import FastAPI, HTTPException, Request
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from slowapi import _rate_limit_exceeded_handler
 from slowapi.errors import RateLimitExceeded
@@ -15,6 +16,18 @@ app = FastAPI(
     version="1.0.0",
     description="Internal AI microservice for prescription analysis. "
     "Called only by the ASP.NET Core backend — never exposed to Flutter directly.",
+)
+
+# CORS is open here ONLY to support the local demo.html test page (opened directly
+# from the filesystem or a static server, which browsers treat as a cross-origin
+# request). The real ASP.NET Core backend is server-to-server and never subject to
+# CORS at all — this does not weaken production security, X-Service-Api-Key still
+# gates every call. If demo.html is ever removed, tighten allow_origins accordingly.
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
 
 app.state.limiter = limiter

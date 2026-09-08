@@ -14,11 +14,15 @@ class Settings(BaseSettings):
 
     # --- AI provider (via OpenRouter — OpenAI-compatible endpoint) ---
     openrouter_api_key: str
-    openrouter_base_url: str = "https://openrouter.ai/api/v1"
-    # Locked production decision — see README "قرار الموديل النهائي". Do not
+    # Despite the "openrouter_" prefix (kept for historical/generality reasons —
+    # this client works with any OpenAI-compatible endpoint), production actually
+    # points directly at Google's Gemini OpenAI-compatibility layer. See
+    # API_CONTRACT.md §8 for why.
+    openrouter_base_url: str = "https://generativelanguage.googleapis.com/v1beta/openai/"
+    # Locked production decision (revised) — see API_CONTRACT.md §8. Do not
     # switch to another model without re-running the accuracy comparison
     # against real prescription images first.
-    openrouter_model: str = "anthropic/claude-sonnet-4.5"
+    openrouter_model: str = "gemini-3.6-flash"
     # OpenRouter uses these to attribute usage to your app on their dashboard/leaderboards.
     # Optional, but recommended — set to your real site once you have one.
     openrouter_site_url: str = "https://medicare.app"

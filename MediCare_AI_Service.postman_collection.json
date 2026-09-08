@@ -1,0 +1,104 @@
+{
+  "info": {
+    "name": "MediCare AI Service",
+    "description": "AI prescription-analysis microservice. Called only by the ASP.NET Core backend — see API_CONTRACT.md in the repo for full field-by-field documentation, confidence scoring rules, and error shapes.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "https://medicare-ai-service.fastapicloud.dev",
+      "description": "Production URL. Switch to http://localhost:8001 for local testing."
+    },
+    {
+      "key": "service_api_key",
+      "value": "change-me-to-a-long-random-string",
+      "description": "Must match the SERVICE_API_KEY environment variable configured on the AI service"
+    }
+  ],
+  "item": [
+    {
+      "name": "Health Check",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/api/v1/health",
+          "host": ["{{base_url}}"],
+          "path": ["api", "v1", "health"]
+        },
+        "description": "Liveness check. No auth required. Returns status, version, and which model is currently configured."
+      },
+      "response": []
+    },
+    {
+      "name": "Analyze Prescription",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "X-Service-Api-Key",
+            "value": "{{service_api_key}}"
+          }
+        ],
+        "body": {
+          "mode": "formdata",
+          "formdata": [
+            {
+              "key": "image",
+              "type": "file",
+              "src": [],
+              "description": "JPEG or PNG, max 10MB"
+            },
+            {
+              "key": "patient_id",
+              "value": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+              "type": "text",
+              "description": "GUID — passed through for logging only, the AI service does not query SQL Server"
+            },
+            {
+              "key": "language_hint",
+              "value": "ar",
+              "type": "text",
+              "description": "'ar' or 'en' — controls the language of generated instructions text, not what languages it can read"
+            }
+          ]
+        },
+        "url": {
+          "raw": "{{base_url}}/api/v1/prescriptions/analyze",
+          "host": ["{{base_url}}"],
+          "path": ["api", "v1", "prescriptions", "analyze"]
+        },
+        "description": "Core endpoint. Sends a prescription photo, returns structured medication data with per-field confidence scores. See API_CONTRACT.md §3.2 for the full response schema, all `flagged_for_manual_review` reason codes, and error responses (400/422/429/500)."
+      },
+      "response": []
+    },
+    {
+      "name": "Search Drugs (manual entry helper)",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "X-Service-Api-Key",
+            "value": "{{service_api_key}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"query\": \"بانادول\",\n  \"limit\": 5\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/api/v1/drugs/search",
+          "host": ["{{base_url}}"],
+          "path": ["api", "v1", "drugs", "search"]
+        },
+        "description": "Fuzzy-searches the same drug database the AI uses. Useful for a manual 'add medication' screen so names stay consistent with what /analyze can recognize."
+      },
+      "response": []
+    }
+  ]
+}

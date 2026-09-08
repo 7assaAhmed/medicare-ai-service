@@ -19,7 +19,7 @@ _آخر مزامنة مع الكود الفعلي: 2026-09-03. المستند د
 | البيئة | الرابط الأساسي |
 |---|---|
 | بيئة التطوير المحلية | `http://localhost:8001` |
-| الإنتاج (Render) | `https://<اسم-خدمتك>.onrender.com` — حدّثه بالرابط الحقيقي بعد ما الخدمة تشتغل على Render، وسلّمه لفريق ASP.NET Core عشان يحطوه في `appsettings.json` تحت `AiService:BaseUrl` |
+| الإنتاج (FastAPI Cloud) | `https://medicare-ai-service.fastapicloud.dev` |
 
 كل الـ Endpoints ليها بادئة `/api/v1`.
 

@@ -19,7 +19,7 @@ The ASP.NET Core backend is the **only** caller of the AI service. The AI servic
 | Environment | Base URL |
 |---|---|
 | Local dev | `http://localhost:8001` |
-| Production (Render) | `https://<your-service-name>.onrender.com` — replace once the Render service is live; update this row and hand the real URL to the ASP.NET Core team's `appsettings.json` `AiService:BaseUrl` |
+| Production (FastAPI Cloud) | `https://medicare-ai-service.fastapicloud.dev` |
 
 All endpoints are prefixed with `/api/v1`.
 
